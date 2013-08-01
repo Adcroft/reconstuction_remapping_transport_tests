@@ -14,7 +14,7 @@ function test1Dschemes(n,CFL,nTurns,flipFlow,shape)
 % To run specific configuration
 % >> test1Dschemes(100,.05,3,1,'cosinebell')
 
-% This is allow invocing testSchemes without arguments
+% The following allows invoking test1Dschemes without all arguments
 if ~exist('n','var'); n=35; end
 if ~exist('CFL','var'); CFL=.1; end
 if ~exist('nTurns','var'); nTurns=1; end
@@ -59,4 +59,3 @@ for t=1:nt*nTurns
 end
 plot(x0,q0,'k:',xc,qPCM,'r',xc,qPLM,'m',xc,qPPMh3,'b',xc,qPPMcw,'k')
 legend('Test function','PCM','PLM','PPMh3','PPMcw')
-

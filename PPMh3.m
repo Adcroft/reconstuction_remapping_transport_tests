@@ -1,5 +1,25 @@
 function [F,X,P] = PPMh3(q,dx,u,dt)
 % [F,X,P] = PPMh3(q,dx,u,dt)
+%
+% Piecewise Parabolic Method (PPM) of Colella and Woodward, 1984.
+% H.T. Huynh, Schemes and constraints for advection, in: Proceedings of the Fifteenth International Conference on Numerical Methods in Fluid Dynamics, Monterey, CA, USA, 24?28 June 1996, 1996.
+% This currently implements the uniform grid case, with limiter.
+%
+% Use the netcdf convention for indexing (j,i). For 1-dimensional applications
+% data should be sized (1,ni). For 2-dimensional applications data should be
+% sized (nj,ni) and this function operates on the second index.
+%
+% Inputs:
+%  q is the scalar field to be reconstructed/transported.
+%  dx is the cell widths, same shape/size as q.
+%  u is the flow, size(u)=size(q)+[0 1].
+%  dt is the time-step (scalar value).
+%
+% Outputs:
+%  F is the flux * dt/dx so that q = q - diff(F) evolves the scalar field.
+%    F has the shape/size of u.
+%  X, P are position, values for visualization. Plot with plot(X,P).
+%    X, P may have arbitrary lengths compared to q.
 
 sz = size(q);
 
@@ -12,7 +32,7 @@ aR = (5*q + 2*qR - qL)/6;
 aL = max( min(qL,q), aL); aL = min( max(qL,q), aL);
 aR = max( min(qR,q), aR); aR = min( max(qR,q), aR);
 
-% Colella-Woodwrd Limiting
+% Colella-Woodward Limiting
 left = find( (aR-aL).*(6*q-3*(aR+aL)) < -(aR-aL).^2 );
 aR(left) = 3*q(left) - 2*aL(left);
 right = find( (aR-aL).*(6*q-3*(aR+aL)) > (aR-aL).^2 );

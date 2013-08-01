@@ -1,5 +1,25 @@
 function [F,X,P] = PLM(q,dx,u,dt)
 % [F,X,P] = PLM(q,dx,u,dt)
+%
+% Piecewise Linear Method, due to van Leer, 1979.
+% http://dx.doi.org/10.1016/0021-9991(79)90145-1
+% This currently implements the uniform grid case.
+%
+% Use the netcdf convention for indexing (j,i). For 1-dimensional applications
+% data should be sized (1,ni). For 2-dimensional applications data should be
+% sized (nj,ni) and this function operates on the second index.
+%
+% Inputs:
+%  q is the scalar field to be reconstructed/transported.
+%  dx is the cell widths, same shape/size as q.
+%  u is the flow, size(u)=size(q)+[0 1].
+%  dt is the time-step (scalar value).
+%
+% Outputs:
+%  F is the flux * dt/dx so that q = q - diff(F) evolves the scalar field.
+%    F has the shape/size of u.
+%  X, P are position, values for visualization. Plot with plot(X,P).
+%    X, P may have arbitrary lengths compared to q.
 
 sz = size(q);
 
