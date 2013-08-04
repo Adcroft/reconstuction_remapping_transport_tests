@@ -1,4 +1,4 @@
-function [F,X,P] = PPMh3(q,dx,u,dt)
+function [F,X,P] = PPMh3(q,dx,u,dt,uniform)
 % [F,X,P] = PPMh3(q,dx,u,dt)
 %
 % Piecewise Parabolic Method (PPM) of Colella and Woodward, 1984.
@@ -14,19 +14,31 @@ function [F,X,P] = PPMh3(q,dx,u,dt)
 %  dx is the cell widths, same shape/size as q.
 %  u is the flow, size(u)=size(q)+[0 1].
 %  dt is the time-step (scalar value).
+%  uniform defaults to 0. If =1, uses the uniform grid discretization.
 %
 % Outputs:
-%  F is the flux * dt/dx so that q = q - diff(F) evolves the scalar field.
+%  F is the flux = u q that q = q - dt*diff(F)./dx evolves the scalar field.
 %    F has the shape/size of u.
 %  X, P are position, values for visualization. Plot with plot(X,P).
 %    X, P may have arbitrary lengths compared to q.
+
+if ~exist('uniform','var'); uniform=0; end
 
 sz = size(q);
 
 % Edge values
 qL = q(:,[end 1:end-1]); qR = q(:,[2:end 1]);
-aL = (5*q + 2*qL - qR)/6;
-aR = (5*q + 2*qR - qL)/6;
+if uniform
+	aL = (5*q + 2*qL - qR)/6;
+	aR = (5*q + 2*qR - qL)/6;
+else
+	h0 = dx(:,[end 1:end-1]); h2 = dx(:,[2:end 1]);
+	h01 = h0 + dx; h12 = dx + h2 ; h012 = dx + (h0+h2);
+	aL = h12.*( dx.*qL + h0.*q )./( h01.*h012 ) ...
+		+ ( ( 2*dx + h2 ).* h0.*q - h0.*dx.*qR )./( h12.*h012 );
+	aR = ( ( h0 + 2*dx ).*h2.*q - dx.*h2.*qL )./( h01.*h012 ) ...
+		+  h01.*( h2.*q + dx.*qR )./( h12.*h012 );
+end
 
 % Bound edge values
 aL = max( min(qL,q), aL); aL = min( max(qL,q), aL);
@@ -46,11 +58,11 @@ a6 = 3*( 2*q - (aL+aR));
 % Flux
 Cp = u(:,2:end)./dx*dt; % CFL for use when u>0
 Cm = -u(:,1:end-1)./dx*dt; % CFL for use when u<0
-Fp = (aR - Cp/2 .* ( (aR-aL) - a6 .* (1 - 2/3*Cp) ) )./dx*dt; % Flux out of right for u>0
-Fm = (aL + Cm/2 .* ( (aR-aL) + a6 .* (1 - 2/3*Cm)) )./dx*dt; % Flux out of left for u<0
+Ap = aR - Cp/2 .* ( (aR-aL) - a6 .* (1 - 2/3*Cp) ); % Average value leaving to right for u>0
+Am = aL + Cm/2 .* ( (aR-aL) + a6 .* (1 - 2/3*Cm) ); % Average value leaving to left for u<0
 % Combine fluxes from different signed flow
 up = (u+abs(u))/2; um = (u-abs(u))/2;
-F = up.*Fp(:,[end 1:end])+um.*Fm(:,[1:end 1]);
+F = up.*Ap(:,[end 1:end])+um.*Am(:,[1:end 1]);
 
 if nargout > 1
 	% Create plottable reconstruction

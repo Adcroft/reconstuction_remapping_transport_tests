@@ -1,5 +1,5 @@
-function [F,X,P] = PLM(q,dx,u,dt)
-% [F,X,P] = PLM(q,dx,u,dt)
+function [F,X,P] = PLM(q,dx,u,dt,uniform)
+% [F,X,P] = PLM(q,dx,u,dt,uniform)
 %
 % Piecewise Linear Method, due to van Leer, 1979.
 % http://dx.doi.org/10.1016/0021-9991(79)90145-1
@@ -14,12 +14,15 @@ function [F,X,P] = PLM(q,dx,u,dt)
 %  dx is the cell widths, same shape/size as q.
 %  u is the flow, size(u)=size(q)+[0 1].
 %  dt is the time-step (scalar value).
+%  uniform defaults to 0. If =1, uses the uniform grid discretization.
 %
 % Outputs:
-%  F is the flux * dt/dx so that q = q - diff(F) evolves the scalar field.
+%  F is the flux = u q that q = q - dt*diff(F)./dx evolves the scalar field.
 %    F has the shape/size of u.
 %  X, P are position, values for visualization. Plot with plot(X,P).
 %    X, P may have arbitrary lengths compared to q.
+
+if ~exist('uniform','var'); uniform=0; end
 
 sz = size(q);
 
@@ -27,7 +30,14 @@ sz = size(q);
 qL = q(:,[end 1:end-1]); qR = q(:,[2:end 1]);
 sMax = max( max(qR, qL), q) - q;
 sMin = q - min( min(qR, qL), q);
-slp2 = (qR - qL)/2;
+if uniform
+	slp2 = (qR - qL)/2;
+else
+	hL = dx(:,[end 1:end-1]); hR = dx(:,[2:end 1]);
+	slp2 = dx ./ ( dx + (hL+hR) ) .* ( ...
+		( 2*hL + dx )./( hR + dx ) .* ( qR - q ) + ...
+		( dx + 2*hR )./( hL + dx ) .* ( q - qL ) );
+end
 slp = sign(slp2).*min( abs(slp2), 2*min( sMax, sMin ) );
 
 % Edge values
@@ -37,11 +47,11 @@ aR = q + slp/2;
 % Flux
 Cp = u(:,2:end)./dx*dt; % CFL for use when u>0
 Cm = -u(:,1:end-1)./dx*dt; % CFL for use when u<0
-Fp = (aR - slp/2 .* Cp)./dx*dt; % Flux out of right for u>0
-Fm = (aL + slp/2 .* Cm)./dx*dt; % Flux out of left for u<0
+Ap = aR - slp/2 .* Cp; % Average value leaving to right for u>0
+Am = aL + slp/2 .* Cm; % Average value leaving to left for u<0
 % Combine fluxes from different signed flow
 up = (u+abs(u))/2; um = (u-abs(u))/2;
-F = up.*Fp(:,[end 1:end])+um.*Fm(:,[1:end 1]);
+F = up.*Ap(:,[end 1:end])+um.*Am(:,[1:end 1]);
 
 if nargout > 1
 	% Create plottable reconstruction

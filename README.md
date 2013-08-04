@@ -19,7 +19,7 @@ The reconstruction functions should return both flux and plotting data, e.g.
 
 so that the evolution can be found by
 
->> q = q - diff(F);
+>> q = q - dt*diff(F)./dx;
 
 and the reconstruction can be visualized by
 

@@ -17,7 +17,7 @@ function [F,X,P] = PCM(q,dx,u,dt)
 %  dt is the time-step (scalar value).
 %
 % Outputs:
-%  F is the flux * dt/dx so that q = q - diff(F) evolves the scalar field.
+%  F is the flux = u q that q = q - dt*diff(F)./dx evolves the scalar field.
 %    F has the shape/size of u.
 %  X, P are position, values for visualization. Plot with plot(X,P).
 %    X, P may have arbitrary lengths compared to q.
@@ -25,11 +25,11 @@ function [F,X,P] = PCM(q,dx,u,dt)
 sz = size(q);
 
 % Flux
-Fp = q./dx*dt; % Flux out of right for u>0
-Fm = q./dx*dt; % Flux out of left for u<0
+Ap = q; % Average value leaving to right for u>0
+Am = q; % Average value leaving to left for u<0
 % Combine fluxes from different signed flow
 up = (u+abs(u))/2; um = (u-abs(u))/2;
-F = up.*Fp(:,[end 1:end])+um.*Fm(:,[1:end 1]);
+F = up.*Ap(:,[end 1:end])+um.*Am(:,[1:end 1]);
 
 if nargout > 1
 	% Create plottable reconstruction
