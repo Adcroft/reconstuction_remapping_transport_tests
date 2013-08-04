@@ -44,14 +44,14 @@ for t=1:nt*nTurns
 	if flipFlow && mod(t,nt)==0
 		u=-u;
 	end
-	[Fpcm]=PCM(qPCM,dx,u,dt);
-	qPCM = qPCM - diff(Fpcm);
-	[Fplm]=PLM(qPLM,dx,u,dt);
-	qPLM = qPLM - diff(Fplm);
-	[Fppmh3]=PPMh3(qPPMh3,dx,u,dt);
-	qPPMh3 = qPPMh3 - diff(Fppmh3);
-	[FppmCW]=PPMcw(qPPMcw,dx,u,dt);
-	qPPMcw = qPPMcw - diff(FppmCW);
+	Fpcm=PCM(qPCM, dx, u, dt);
+	qPCM = update( qPCM, Fpcm, dx , 'PCM');
+	Fplm = PLM(qPLM, dx, u, dt);
+	qPLM = update( qPLM, Fplm, dx , 'PLM');
+	FppmH3 = PPMh3(qPPMh3,dx,u,dt);
+	qPPMh3 = update( qPPMh3, FppmH3, dx , 'PPMh3');
+	FppmCW = PPMcw(qPPMcw,dx,u,dt);
+	qPPMcw = update( qPPMcw, FppmCW, dx , 'PPMcw');
 	if mod(t,10)==0
 		plot(xc,qPCM,'r',xc,qPLM,'m',xc,qPPMh3,'b',xc,qPPMcw,'k')
 		drawnow
@@ -59,3 +59,18 @@ for t=1:nt*nTurns
 end
 plot(x0,q0,'k:',xc,qPCM,'r',xc,qPLM,'m',xc,qPPMh3,'b',xc,qPPMcw,'k')
 legend('Test function','PCM','PLM','PPMh3','PPMcw')
+
+function [Qnp1] = update(Qn, F, A, msg)
+% Implements the time update with some sanity checking
+Qmin=min(Qn(:)); Qmax=max(Qn(:)); Q2=A.*Qn.*Qn; Q2=sum(Q2(:));
+Qnp1 = Qn - diff(F);
+if min(Qnp1(:))-Qmin < -eps(Qmin)*2
+	fprintf('Undershoot %e - %e = %e %s\n',min(Qnp1(:)),Qmin,min(Qnp1(:))-Qmin,msg)
+% 	keyboard
+end
+if max(Qnp1(:))-Qmax > eps(Qmax)*2
+	fprintf('Overshoot %e - %e = %e %s\n',max(Qnp1(:)),Qmax,max(Qnp1(:))-Qmax,msg)
+% 	keyboard
+end
+Qn2=A.*Qnp1.*Qnp1; Qn2=sum(Qn2(:));
+
