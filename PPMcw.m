@@ -3,7 +3,6 @@ function [F,X,P] = PPMcw(q,dx,u,dt,uniform)
 %
 % Piecewise Parabolic Method (PPM) of Colella and Woodward, 1984.
 % http://dx.doi.org/10.1016/0021-991(84)90143-8
-% This currently implements the uniform grid case, with limiter.
 %
 % Use the netcdf convention for indexing (j,i). For 1-dimensional applications
 % data should be sized (1,ni). For 2-dimensional applications data should be

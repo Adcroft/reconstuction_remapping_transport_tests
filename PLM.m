@@ -3,7 +3,6 @@ function [F,X,P] = PLM(q,dx,u,dt,uniform)
 %
 % Piecewise Linear Method, due to van Leer, 1979.
 % http://dx.doi.org/10.1016/0021-9991(79)90145-1
-% This currently implements the uniform grid case.
 %
 % Use the netcdf convention for indexing (j,i). For 1-dimensional applications
 % data should be sized (1,ni). For 2-dimensional applications data should be

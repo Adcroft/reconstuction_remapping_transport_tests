@@ -3,7 +3,6 @@ function [F,X,P] = PPMh3(q,dx,u,dt,uniform)
 %
 % Piecewise Parabolic Method (PPM) of Colella and Woodward, 1984.
 % H.T. Huynh, Schemes and constraints for advection, in: Proceedings of the Fifteenth International Conference on Numerical Methods in Fluid Dynamics, Monterey, CA, USA, 24?28 June 1996, 1996.
-% This currently implements the uniform grid case, with limiter.
 %
 % Use the netcdf convention for indexing (j,i). For 1-dimensional applications
 % data should be sized (1,ni). For 2-dimensional applications data should be
