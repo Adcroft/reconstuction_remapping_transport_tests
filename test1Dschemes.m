@@ -30,8 +30,9 @@ u=ones(1,n+1);
 nt=round( 1./( CFL*min(dx)./max(abs(u)) ) );
 dt=1/nt;
 
-Q=testFunction(xc,shape);
-x0=(0:1000)/1000; q0=testFunction(x0,shape);
+% Q=testFunction(xc,shape);
+Q=testFunctionFV(xg,shape);
+x0=(0:max(1000,5*n))/max(1000,5*n); q0=testFunction(x0,shape); % For plotting
 
 [~,Xpcm,Ppcm]=PCM(Q,dx,u,dt);
 [~,Xplm,Pplm]=PLM(Q,dx,u,dt);
@@ -62,8 +63,8 @@ for t=1:nt*nTurns
 		drawnow
 	end
 end
-plot(x0,q0,'k:',xc,qPCM,'r.-',xc,qPLM,'m.-',xc,qPPMh3,'b.-',xc,qPPMcw,'k.-')
-legend('Test function','PCM','PLM','PPMh3','PPMcw')
+plot(x0,q0,'k:',xc,Q,'k.:',xc,qPCM,'r.-',xc,qPLM,'m.-',xc,qPPMh3,'b.-',xc,qPPMcw,'k.-')
+legend('Anal. test fn','FV init. cond.','PCM','PLM','PPMh3','PPMcw')
 
 function [Qnp1] = update(Qn, F, dx, dt, msg)
 % Implements the time update with some sanity checking
@@ -78,4 +79,3 @@ if max(Qnp1(:))-Qmax > eps(Qmax)*0
 % 	keyboard
 end
 Qn2=dx.*Qnp1.*Qnp1; Qn2=sum(Qn2(:));
-
